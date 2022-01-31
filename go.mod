@@ -1,4 +1,4 @@
-module  github.com/LordRadamanthys/bookstore_utils-go
+module github.com/LordRadamanthys/bookstore_utils-go
 
 go 1.17
 
