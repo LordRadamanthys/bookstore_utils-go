@@ -53,3 +53,15 @@ func InternalServerError(message string, err error) *RestErr {
 	}
 	return result
 }
+
+func UnauthorizedError(message string, err error) *RestErr {
+	result := &RestErr{
+		Message: message,
+		Status:  http.StatusUnauthorized,
+		Error:   "unauthorized",
+	}
+	if err != nil {
+		result.Causes = append(result.Causes, err.Error())
+	}
+	return result
+}

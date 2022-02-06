@@ -49,3 +49,16 @@ func TestNotFoundError(t *testing.T) {
 	assert.EqualValues(t, 1, len(err.Causes))
 	assert.EqualValues(t, "teste error", err.Causes[0])
 }
+
+func TestUnauthorizedError(t *testing.T) {
+	err := UnauthorizedError("this is the message", errors.New("teste error"))
+	assert.NotNil(t, err)
+	assert.EqualValues(t, http.StatusUnauthorized, err.Status)
+	assert.EqualValues(t, "this is the message", err.Message)
+	assert.EqualValues(t, "unauthorized", err.Error)
+
+	assert.NotNil(t, err.Causes)
+	assert.EqualValues(t, 1, len(err.Causes))
+	assert.EqualValues(t, 1, len(err.Causes))
+	assert.EqualValues(t, "teste error", err.Causes[0])
+}
