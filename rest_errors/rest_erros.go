@@ -5,63 +5,83 @@ import (
 	"net/http"
 )
 
-type RestErr struct {
-	Message string        `json:"message"`
-	Status  int           `json:"status"`
-	Error   string        `json:"error"`
-	Causes  []interface{} `json:"causes"`
+type RestErr interface {
+	Message() string
+	Code() int
+	Error() string
+	Causes() []interface{}
+}
+
+type restErr struct {
+	message string        `json:"message"`
+	code    int           `json:"code"`
+	err     string        `json:"error"`
+	causes  []interface{} `json:"causes"`
+}
+
+func NewRestError(message string, code int, err string, causes []interface{}) RestErr {
+	return restErr{
+		message: message,
+		code:    code,
+		err:     err,
+		causes:  causes,
+	}
+}
+
+func (r restErr) Message() string {
+	return r.message
+}
+
+func (r restErr) Code() int {
+	return r.code
+}
+
+func (r restErr) Causes() []interface{} {
+	return r.causes
+}
+
+func (r restErr) Error() string {
+	return r.err
 }
 
 func NewError(msg string) error {
 	return errors.New(msg)
 }
 
-func BadRequestError(message string, err error) *RestErr {
+func NewBadRequestError(message string) RestErr {
+	return restErr{
+		message: message,
+		code:    http.StatusBadRequest,
+		err:     "bad_request",
+	}
+}
 
-	result := &RestErr{
-		Message: message,
-		Status:  http.StatusBadRequest,
-		Error:   "bad_request",
+func NewNotFoundError(message string) RestErr {
+	return restErr{
+		message: message,
+		code:    http.StatusNotFound,
+		err:     "not_found",
 	}
+}
+
+func NewInternalServerError(message string, err error) RestErr {
+	result := restErr{
+		message: message,
+		code:    http.StatusInternalServerError,
+		err:     "internal_server_error",
+	}
+
 	if err != nil {
-		result.Causes = append(result.Causes, err.Error())
+		result.causes = append(result.causes, err.Error())
 	}
+
 	return result
 }
 
-func NotFoundError(message string, err error) *RestErr {
-
-	result := &RestErr{
-		Message: message,
-		Status:  http.StatusNotFound,
-		Error:   "not_found",
+func NewUnauthorizedError(message string) RestErr {
+	return restErr{
+		message: message,
+		code:    http.StatusUnauthorized,
+		err:     "unauthorized",
 	}
-	if err != nil {
-		result.Causes = append(result.Causes, err.Error())
-	}
-	return result
-}
-
-func InternalServerError(message string, err error) *RestErr {
-	result := &RestErr{
-		Message: message,
-		Status:  http.StatusInternalServerError,
-		Error:   "internal_server_error",
-	}
-	if err != nil {
-		result.Causes = append(result.Causes, err.Error())
-	}
-	return result
-}
-
-func UnauthorizedError(message string, err error) *RestErr {
-	result := &RestErr{
-		Message: message,
-		Status:  http.StatusUnauthorized,
-		Error:   "unauthorized",
-	}
-	if err != nil {
-		result.Causes = append(result.Causes, err.Error())
-	}
-	return result
 }
